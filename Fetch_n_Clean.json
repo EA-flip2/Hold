@@ -1,0 +1,553 @@
+{
+  "name": "Fetch_n_Clean",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -336
+      ],
+      "id": "39eb3fee-1d1f-4aa0-afa1-a987c70c10bc",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mode",
+              "value": "native_text"
+            },
+            {
+              "name": "output_mode",
+              "value": "layout_preserving"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "unstract-key",
+              "value": "W-9OmycXQRQYeSjo_YORR-LkHojjCeiKliDg5IBV_wE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        64,
+        -48
+      ],
+      "id": "c2745ab8-dcd9-467e-867b-ad0ea42b7858",
+      "name": "Upload_data"
+    },
+    {
+      "parameters": {
+        "url": "https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper-status",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "whisper_hash",
+              "value": "={{ $item(\"0\").$node[\"Upload_data\"].json[\"whisper_hash\"] }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "unstract-key",
+              "value": "W-9OmycXQRQYeSjo_YORR-LkHojjCeiKliDg5IBV_wE"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        -48
+      ],
+      "id": "6408e65e-fdb8-4f02-88cf-de82702f6e5b",
+      "name": "check_status"
+    },
+    {
+      "parameters": {
+        "url": "https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper-retrieve",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "whisper_hash",
+              "value": "={{ $('Upload_data').item.json.whisper_hash }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "unstract-key",
+              "value": "W-9OmycXQRQYeSjo_YORR-LkHojjCeiKliDg5IBV_wE"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        928,
+        -112
+      ],
+      "id": "7c9c1956-57b7-4f58-a1a8-e020e9557fa2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "processed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f4a6a861-f875-44d0-abd0-5d7aaf60b8a5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1af8faac-8f8e-44b1-9f55-a8d7b38641f4",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "processing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a543390c-a23b-4703-96ae-1c2fc0f20f1e",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7fb07dfe-a9fd-4935-bf20-1d5815f76178",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "accepted",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b28bf214-8e73-4d31-ac52-fb1e5406c5c8",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "retrieved",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        464,
+        -96
+      ],
+      "id": "53a97686-c404-4177-aa44-69803b85e22d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "d906c02f-ceeb-4f72-b6d1-6008a5ea0624",
+      "name": "Wait",
+      "webhookId": "3c6b3eec-5e08-449d-a4dc-428d7b7d522f"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.download_small_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        -48
+      ],
+      "id": "7e572f13-992f-4a53-84e7-30e940be59f2",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "field-data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        -240
+      ],
+      "id": "8dd361a6-3f55-4321-81b3-45d223013b28",
+      "name": "Webhook",
+      "webhookId": "9e997e29-e4d4-4676-bd17-4d5bc126034c",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        -320
+      ],
+      "id": "3710b99d-c7e4-49f6-a135-e7f8dfaae781",
+      "name": "HTTP Request2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -704,
+        -64
+      ],
+      "id": "4b801d1a-aadc-4605-9bba-ba2afff304d4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        -64
+      ],
+      "id": "2b1ce5ef-ca18-4d64-a266-4b6e4fe3ac03",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "select-javelin-huge.ngrok-free.app",
+            "user-agent": "python-requests/2.32.5",
+            "content-length": "288",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, zstd",
+            "content-type": "application/json",
+            "x-forwarded-for": "154.161.50.203",
+            "x-forwarded-host": "select-javelin-huge.ngrok-free.app",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": [
+            {
+              "boe": "1763668694572.jpg",
+              "dvla": "1763668705815.jpg",
+              "poe": "1763668733239.jpg",
+              "type": "BULL DOZER",
+              "stype": null,
+              "make": "SHANTUI",
+              "smake": null,
+              "model": "SD22",
+              "poc": "1763668899324.jpg",
+              "asset": "G278",
+              "tech": "YAW",
+              "stech": null,
+              "dateTracked": "2025-11-19T00:00:00"
+            }
+          ],
+          "webhookUrl": "https://select-javelin-huge.ngrok-free.app/webhook-test/field-data",
+          "executionMode": "test"
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "question_xpath": "UPLOAD_DATA_ON_TRACKER_BOX",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/medium/",
+          "media_file_basename": "1763668899324.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "UPLOAD_PICTURE_OF_SIM_CARD",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/medium/",
+          "media_file_basename": "1763668845580.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "UPLOAD_PICTURE_OF_TRACKER_IMEI",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/medium/",
+          "media_file_basename": "1763668831281.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/medium/",
+          "media_file_basename": "1763668796016.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "PICTURE_OF_EQUIPMENT",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/medium/",
+          "media_file_basename": "1763668733239.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "UPLOAD_DVLA_CERTIFICATE",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/medium/",
+          "media_file_basename": "1763668705815.jpg"
+        }
+      },
+      {
+        "json": {
+          "question_xpath": "UPLOAD_BILL_OF_ENTERY",
+          "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/small/",
+          "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/medium/",
+          "media_file_basename": "1763668694572.jpg"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Upload_data": {
+      "main": [
+        [
+          {
+            "node": "check_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_status": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "check_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Upload_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6de00027-dceb-45b1-bdd7-d99a62c1bdf5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "28f1c26bfccc0455a2139ee493588e8532ed5ae19eaee62ccf04423f1ce349ae"
+  },
+  "id": "1rGxVjTUanJezJ2r",
+  "tags": []
+}

@@ -1,0 +1,791 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "f18e62a0-5acb-4bc9-954e-9f78ad6e47ca",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "koBoToolboxApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ordering",
+              "value": "-name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "a85d3f63-069f-49b7-800d-e168c7511e40",
+      "name": "HTTP Request",
+      "credentials": {
+        "koBoToolboxApi": {
+          "id": "N8ufLkbEAA7U75xN",
+          "name": "KoBoToolbox Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7d4cff36-b139-416c-a28f-42890d4c2183",
+              "leftValue": " 1763668694572.jpg",
+              "rightValue": "={{ $json.file_name }}",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        -432
+      ],
+      "id": "ccf51803-ccee-4a54-b440-799602927362",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.small_url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "koBoToolboxApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        -528
+      ],
+      "id": "65282631-d3e9-4917-ad3c-9c9f25f978b1",
+      "name": "HTTP Request1",
+      "credentials": {
+        "koBoToolboxApi": {
+          "id": "N8ufLkbEAA7U75xN",
+          "name": "KoBoToolbox Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expecting input: an array with one submission item\nconst submission = items[0].json;\n\n// Extract the attachments array safely\nconst attachments = submission._attachments || [];\n\n// Return each attachment as a separate item\nreturn attachments.map(att => ({ json: att }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        96
+      ],
+      "id": "0f5be004-ff26-48df-965d-6e41753507f6",
+      "name": "pick_attachments"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The incoming data is an array with one item.\n// We extract the \"results\" array from the first item.\n\nconst wrapper = items[0].json;\n\n// If the wrapper contains \"results\", return each result as a separate item.\nconst results = wrapper.results || [];\n\nreturn results.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "8c5fc0bf-86dd-4321-a0f5-9a78bd028d48",
+      "name": "pick_results"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6283f47e-5205-4371-8b65-1d356c5233b4",
+              "leftValue": "={{ $now.format('yyyy-MM-dd') }}",
+              "rightValue": "={{ $json.today }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        -16
+      ],
+      "id": "33407c83-f83e-442c-9bb4-f957c595ada6",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        -112
+      ],
+      "id": "cafa46fe-3d4d-47cb-8cda-220bfccc95a0",
+      "name": "Submitted_Form"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ddc37c9a-3a8c-4b4d-a81d-1845e660d773",
+              "name": "question",
+              "value": "={{ $json.question_xpath.split('/').pop() }}",
+              "type": "string"
+            },
+            {
+              "id": "141473ae-d4a9-4242-9876-56649403d98a",
+              "name": "download_small_url",
+              "value": "={{ $json.download_small_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1280,
+        -176
+      ],
+      "id": "c634d4cd-d076-4b65-8d28-ce7642d6e231",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expecting input: an array with one submission item\nconst submission = items[0].json;\n\n// Extract the attachments array safely\nconst groups = submission.group_kk7fy66 || [];\n\n// Return each attachment as a separate item\nreturn groups.map(att => ({ json: att }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "eb4e084c-d00e-44bd-8999-49a20fe5db66",
+      "name": "pick_group"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1rGxVjTUanJezJ2r",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1rGxVjTUanJezJ2r",
+          "cachedResultName": "Fetch_n_Clean"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        96
+      ],
+      "id": "7833ddf8-3757-420a-9e5f-2266f18f036b",
+      "name": "Call 'Fetch_n_Clean'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b79befc6-7460-456e-b56e-84f9606ac20f",
+              "name": "question_xpath",
+              "value": "={{ $json.question_xpath.split(\"/\").pop() }}",
+              "type": "string"
+            },
+            {
+              "id": "2e1f57d8-a9d1-4279-859b-1d86dd7a9637",
+              "name": "download_small_url",
+              "value": "={{ $json.download_small_url }}",
+              "type": "string"
+            },
+            {
+              "id": "20b68e99-6190-4973-b4a7-1e72a3bac048",
+              "name": "download_medium_url",
+              "value": "={{ $json.download_medium_url }}",
+              "type": "string"
+            },
+            {
+              "id": "2a2804dc-355d-4cb5-b205-0fe03edba7a8",
+              "name": "media_file_basename",
+              "value": "={{ $json.media_file_basename }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "b2c7babf-4cef-4248-8976-9fff54f3ddbc",
+      "name": "pick_select_fields"
+    }
+  ],
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "count": 2,
+          "next": null,
+          "previous": null,
+          "results": [
+            {
+              "_id": 610933778,
+              "formhub/uuid": "2eabc91970764c18a592454d43167ed1",
+              "today": "2025-11-20",
+              "username": "emmakobotool",
+              "group_cg5aw55/NAME_OF_PORT": "TEMA",
+              "group_cg5aw55/TYPE_OF_FORM": "Port",
+              "group_cg5aw55/IMPORTER_NAME": "ZONDA SINOTRUK ASSEMBLY",
+              "group_cg5aw55/TELEPHONE_NUMBER_OF_IMPORTER": "0546687849h",
+              "group_cg5aw55/EXPECTED_USE": "sale",
+              "group_cg5aw55/EXPECTED_DESTINATION_OF_EQUIPMENT": "GREATER ACCRA",
+              "group_cg5aw55/EXPECTED_CITY": "TEMA",
+              "group_cg5aw55/TYPE_OF_OWNER": "company",
+              "group_cg5aw55/LOCAL_FOREIGN": "foreign",
+              "group_cg5aw55/IS_THE_IMPORTER_THE_OWNER": "yes",
+              "group_cg5aw55/NATIONAL_ID_TYPE_OF_OWNER": "passport",
+              "group_cg5aw55/VALID_PASSPORT_NUMBER_OF_OWNER": "EG1761696",
+              "group_kk7fy66": [
+                {
+                  "group_kk7fy66/UPLOAD_BILL_OF_ENTERY": "1763668694572.jpg",
+                  "group_kk7fy66/UPLOAD_DVLA_CERTIFICATE": "1763668705815.jpg",
+                  "group_kk7fy66/PICTURE_OF_EQUIPMENT": "1763668733239.jpg",
+                  "group_kk7fy66/TYPE_OF_EQUIPMENT": "bull_dozer",
+                  "group_kk7fy66/MAKE_OF_EQUIPMENT": "shantui",
+                  "group_kk7fy66/MODEL_OF_EQUIPMENT": "SD22",
+                  "group_kk7fy66/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT": "1763668796016.jpg",
+                  "group_kk7fy66/LAST_DIGITS_OF_CHASIS": "27798",
+                  "group_kk7fy66/IS_THE_EQUIPMENT_BEING_TRACKED": "yes",
+                  "group_kk7fy66/ASSET_NAME": "G278",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_TRACKER_IMEI": "1763668831281.jpg",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_SIM_CARD": "1763668845580.jpg",
+                  "group_kk7fy66/UPLOAD_DATA_ON_TRACKER_BOX": "1763668899324.jpg",
+                  "group_kk7fy66/NAME_OF_TECHNICIAN": "yaw",
+                  "group_kk7fy66/DATE_TRACKED": "2025-11-19",
+                  "group_kk7fy66/COMMENT": "Test data"
+                }
+              ],
+              "__version__": "v2PUMA86FkBnCCogNzipru",
+              "meta/instanceID": "uuid:de0d180c-0612-4abc-9356-9758e7df3ae3",
+              "_xform_id_string": "aUqgKNpVPzBQpjf6nTy9V5",
+              "_uuid": "de0d180c-0612-4abc-9356-9758e7df3ae3",
+              "meta/rootUuid": "uuid:de0d180c-0612-4abc-9356-9758e7df3ae3",
+              "_attachments": [
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668899324.jpg",
+                  "media_file_basename": "1763668899324.jpg",
+                  "uid": "att5cHwxDfbW8pngikmH5xEK",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att5cHwxDfbW8pngikmH5xEK/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_DATA_ON_TRACKER_BOX"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668845580.jpg",
+                  "media_file_basename": "1763668845580.jpg",
+                  "uid": "att4F2rUiMfMEPCoaVVxeLt9",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/att4F2rUiMfMEPCoaVVxeLt9/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_PICTURE_OF_SIM_CARD"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668831281.jpg",
+                  "media_file_basename": "1763668831281.jpg",
+                  "uid": "attnKVGmJHmx5GbBHRALn3VH",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attnKVGmJHmx5GbBHRALn3VH/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_PICTURE_OF_TRACKER_IMEI"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668796016.jpg",
+                  "media_file_basename": "1763668796016.jpg",
+                  "uid": "attKfzimN4vwZDJLDexz7jx8",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attKfzimN4vwZDJLDexz7jx8/small/",
+                  "question_xpath": "group_kk7fy66[1]/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668733239.jpg",
+                  "media_file_basename": "1763668733239.jpg",
+                  "uid": "atttjyvgxH4EiUiRhXjD4J5Z",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/atttjyvgxH4EiUiRhXjD4J5Z/small/",
+                  "question_xpath": "group_kk7fy66[1]/PICTURE_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668705815.jpg",
+                  "media_file_basename": "1763668705815.jpg",
+                  "uid": "attRAU38GUkAKFsVWwTvUBAa",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attRAU38GUkAKFsVWwTvUBAa/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_DVLA_CERTIFICATE"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/de0d180c-0612-4abc-9356-9758e7df3ae3/1763668694572.jpg",
+                  "media_file_basename": "1763668694572.jpg",
+                  "uid": "attJC58gdYVZfVWkxTMVtxnn",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/610933778/attachments/attJC58gdYVZfVWkxTMVtxnn/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_BILL_OF_ENTERY"
+                }
+              ],
+              "_status": "submitted_via_web",
+              "_geolocation": [
+                null,
+                null
+              ],
+              "_submission_time": "2025-11-20T20:03:01",
+              "_tags": [],
+              "_notes": [],
+              "_validation_status": {},
+              "_submitted_by": "emmakobotool"
+            },
+            {
+              "_id": 613124743,
+              "formhub/uuid": "2eabc91970764c18a592454d43167ed1",
+              "today": "2025-11-23",
+              "username": "emmakobotool",
+              "group_cg5aw55/NAME_OF_PORT": "TEMA",
+              "group_cg5aw55/TYPE_OF_FORM": "Port",
+              "group_cg5aw55/IMPORTER_NAME": "FET MINING ",
+              "group_cg5aw55/TELEPHONE_NUMBER_OF_IMPORTER": "0244354758",
+              "group_cg5aw55/EXPECTED_USE": "construction",
+              "group_cg5aw55/EXPECTED_DESTINATION_OF_EQUIPMENT": "Eastern Region ",
+              "group_cg5aw55/EXPECTED_CITY": "NSAWAM, BORO",
+              "group_cg5aw55/TYPE_OF_OWNER": "company",
+              "group_cg5aw55/LOCAL_FOREIGN": "foreign",
+              "group_cg5aw55/IS_THE_IMPORTER_THE_OWNER": "yes",
+              "group_cg5aw55/NATIONAL_ID_TYPE_OF_OWNER": "ghana_card",
+              "group_cg5aw55/VALID_ID_NUMBER_OF_OWNER": "GHA-001595944-7",
+              "group_cg5aw55/PREFERRED_LANGUAGES_OF_OWNER": "english",
+              "group_kk7fy66": [
+                {
+                  "group_kk7fy66/UPLOAD_BILL_OF_ENTERY": "1763933919026.jpg",
+                  "group_kk7fy66/UPLOAD_DVLA_CERTIFICATE": "1763934005100.jpg",
+                  "group_kk7fy66/PICTURE_OF_EQUIPMENT": "1763934014412.jpg",
+                  "group_kk7fy66/TYPE_OF_EQUIPMENT": "bull_dozer",
+                  "group_kk7fy66/MAKE_OF_EQUIPMENT": "shantui",
+                  "group_kk7fy66/MODEL_OF_EQUIPMENT": "HD22",
+                  "group_kk7fy66/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT": "1763934044494.jpg",
+                  "group_kk7fy66/LAST_DIGITS_OF_CHASIS": "72120",
+                  "group_kk7fy66/IS_THE_EQUIPMENT_BEING_TRACKED": "yes",
+                  "group_kk7fy66/ASSET_NAME": "G324",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_TRACKER_IMEI": "1763934111686.jpg",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_SIM_CARD": "1763934125729.jpg",
+                  "group_kk7fy66/UPLOAD_DATA_ON_TRACKER_BOX": "1763934141180.jpg",
+                  "group_kk7fy66/NAME_OF_TECHNICIAN": "richard",
+                  "group_kk7fy66/DATE_TRACKED": "2025-11-21"
+                },
+                {
+                  "group_kk7fy66/UPLOAD_BILL_OF_ENTERY": "1763934216691.jpg",
+                  "group_kk7fy66/UPLOAD_DVLA_CERTIFICATE": "1763934224537.jpg",
+                  "group_kk7fy66/PICTURE_OF_EQUIPMENT": "1763934234997.jpg",
+                  "group_kk7fy66/TYPE_OF_EQUIPMENT": "bull_dozer",
+                  "group_kk7fy66/MAKE_OF_EQUIPMENT": "shantui",
+                  "group_kk7fy66/MODEL_OF_EQUIPMENT": "HD22",
+                  "group_kk7fy66/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT": "1763934270266.jpg",
+                  "group_kk7fy66/LAST_DIGITS_OF_CHASIS": "72106",
+                  "group_kk7fy66/IS_THE_EQUIPMENT_BEING_TRACKED": "yes",
+                  "group_kk7fy66/ASSET_NAME": "G325",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_TRACKER_IMEI": "1763934365158.jpg",
+                  "group_kk7fy66/UPLOAD_PICTURE_OF_SIM_CARD": "1763934324285.jpg",
+                  "group_kk7fy66/UPLOAD_DATA_ON_TRACKER_BOX": "1763934348094.jpg",
+                  "group_kk7fy66/NAME_OF_TECHNICIAN": "yaw",
+                  "group_kk7fy66/DATE_TRACKED": "2025-11-21"
+                }
+              ],
+              "__version__": "v2PUMA86FkBnCCogNzipru",
+              "meta/instanceID": "uuid:781df417-98fd-4101-ace1-94eb03ddafc0",
+              "_xform_id_string": "aUqgKNpVPzBQpjf6nTy9V5",
+              "_uuid": "781df417-98fd-4101-ace1-94eb03ddafc0",
+              "meta/rootUuid": "uuid:781df417-98fd-4101-ace1-94eb03ddafc0",
+              "_attachments": [
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attYBwWXnuDYSQE7V7tEEEbc/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934365158.jpg",
+                  "media_file_basename": "1763934365158.jpg",
+                  "uid": "attYBwWXnuDYSQE7V7tEEEbc",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attYBwWXnuDYSQE7V7tEEEbc/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attYBwWXnuDYSQE7V7tEEEbc/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attYBwWXnuDYSQE7V7tEEEbc/small/",
+                  "question_xpath": "group_kk7fy66[2]/UPLOAD_PICTURE_OF_TRACKER_IMEI"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att9H78BqetA77EVU32BKaug/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934348094.jpg",
+                  "media_file_basename": "1763934348094.jpg",
+                  "uid": "att9H78BqetA77EVU32BKaug",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att9H78BqetA77EVU32BKaug/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att9H78BqetA77EVU32BKaug/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att9H78BqetA77EVU32BKaug/small/",
+                  "question_xpath": "group_kk7fy66[2]/UPLOAD_DATA_ON_TRACKER_BOX"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attVJ74XSQezTQtzo9zpEhPE/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934324285.jpg",
+                  "media_file_basename": "1763934324285.jpg",
+                  "uid": "attVJ74XSQezTQtzo9zpEhPE",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attVJ74XSQezTQtzo9zpEhPE/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attVJ74XSQezTQtzo9zpEhPE/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attVJ74XSQezTQtzo9zpEhPE/small/",
+                  "question_xpath": "group_kk7fy66[2]/UPLOAD_PICTURE_OF_SIM_CARD"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att7yHE236Nn6Zc8EepCFU9K/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934270266.jpg",
+                  "media_file_basename": "1763934270266.jpg",
+                  "uid": "att7yHE236Nn6Zc8EepCFU9K",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att7yHE236Nn6Zc8EepCFU9K/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att7yHE236Nn6Zc8EepCFU9K/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/att7yHE236Nn6Zc8EepCFU9K/small/",
+                  "question_xpath": "group_kk7fy66[2]/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attfC6xYPyc2ry6RJdA2ECFX/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934234997.jpg",
+                  "media_file_basename": "1763934234997.jpg",
+                  "uid": "attfC6xYPyc2ry6RJdA2ECFX",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attfC6xYPyc2ry6RJdA2ECFX/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attfC6xYPyc2ry6RJdA2ECFX/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attfC6xYPyc2ry6RJdA2ECFX/small/",
+                  "question_xpath": "group_kk7fy66[2]/PICTURE_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attAWfo9zZkbqezjHZowETTW/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934224537.jpg",
+                  "media_file_basename": "1763934224537.jpg",
+                  "uid": "attAWfo9zZkbqezjHZowETTW",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attAWfo9zZkbqezjHZowETTW/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attAWfo9zZkbqezjHZowETTW/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attAWfo9zZkbqezjHZowETTW/small/",
+                  "question_xpath": "group_kk7fy66[2]/UPLOAD_DVLA_CERTIFICATE"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXpRS87JTGKFUsXWQrRjJq/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934216691.jpg",
+                  "media_file_basename": "1763934216691.jpg",
+                  "uid": "attXpRS87JTGKFUsXWQrRjJq",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXpRS87JTGKFUsXWQrRjJq/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXpRS87JTGKFUsXWQrRjJq/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXpRS87JTGKFUsXWQrRjJq/small/",
+                  "question_xpath": "group_kk7fy66[2]/UPLOAD_BILL_OF_ENTERY"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/atthEFsNncKmiTCVZLE4G2bN/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934141180.jpg",
+                  "media_file_basename": "1763934141180.jpg",
+                  "uid": "atthEFsNncKmiTCVZLE4G2bN",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/atthEFsNncKmiTCVZLE4G2bN/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/atthEFsNncKmiTCVZLE4G2bN/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/atthEFsNncKmiTCVZLE4G2bN/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_DATA_ON_TRACKER_BOX"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attWjmLN8zXCTpFgXKygx4bt/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934125729.jpg",
+                  "media_file_basename": "1763934125729.jpg",
+                  "uid": "attWjmLN8zXCTpFgXKygx4bt",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attWjmLN8zXCTpFgXKygx4bt/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attWjmLN8zXCTpFgXKygx4bt/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attWjmLN8zXCTpFgXKygx4bt/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_PICTURE_OF_SIM_CARD"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attvQD3LXciWMw7cncTqjWBT/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934111686.jpg",
+                  "media_file_basename": "1763934111686.jpg",
+                  "uid": "attvQD3LXciWMw7cncTqjWBT",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attvQD3LXciWMw7cncTqjWBT/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attvQD3LXciWMw7cncTqjWBT/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attvQD3LXciWMw7cncTqjWBT/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_PICTURE_OF_TRACKER_IMEI"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attBouXVWJxqJBboJuviqgon/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934044494.jpg",
+                  "media_file_basename": "1763934044494.jpg",
+                  "uid": "attBouXVWJxqJBboJuviqgon",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attBouXVWJxqJBboJuviqgon/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attBouXVWJxqJBboJuviqgon/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attBouXVWJxqJBboJuviqgon/small/",
+                  "question_xpath": "group_kk7fy66[1]/PICTURE_OF_CHASSIS_NUMBER_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attMMAx923HezQYbap7hx7YL/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934005100.jpg",
+                  "media_file_basename": "1763934005100.jpg",
+                  "uid": "attMMAx923HezQYbap7hx7YL",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attMMAx923HezQYbap7hx7YL/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attMMAx923HezQYbap7hx7YL/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attMMAx923HezQYbap7hx7YL/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_DVLA_CERTIFICATE"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attrNJ5T7BfwLLtDsr6KVTaq/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763934014412.jpg",
+                  "media_file_basename": "1763934014412.jpg",
+                  "uid": "attrNJ5T7BfwLLtDsr6KVTaq",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attrNJ5T7BfwLLtDsr6KVTaq/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attrNJ5T7BfwLLtDsr6KVTaq/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attrNJ5T7BfwLLtDsr6KVTaq/small/",
+                  "question_xpath": "group_kk7fy66[1]/PICTURE_OF_EQUIPMENT"
+                },
+                {
+                  "download_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXA5Z372H4C4jLigoKuyLL/",
+                  "mimetype": "image/jpeg",
+                  "filename": "emmakobotool/attachments/2eabc91970764c18a592454d43167ed1/781df417-98fd-4101-ace1-94eb03ddafc0/1763933919026.jpg",
+                  "media_file_basename": "1763933919026.jpg",
+                  "uid": "attXA5Z372H4C4jLigoKuyLL",
+                  "is_deleted": false,
+                  "download_large_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXA5Z372H4C4jLigoKuyLL/large/",
+                  "download_medium_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXA5Z372H4C4jLigoKuyLL/medium/",
+                  "download_small_url": "https://kf.kobotoolbox.org/api/v2/assets/aUqgKNpVPzBQpjf6nTy9V5/data/613124743/attachments/attXA5Z372H4C4jLigoKuyLL/small/",
+                  "question_xpath": "group_kk7fy66[1]/UPLOAD_BILL_OF_ENTERY"
+                }
+              ],
+              "_status": "submitted_via_web",
+              "_geolocation": [
+                null,
+                null
+              ],
+              "_submission_time": "2025-11-23T21:46:37",
+              "_tags": [],
+              "_notes": [],
+              "_validation_status": {},
+              "_submitted_by": "emmakobotool"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "pick_results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick_attachments": {
+      "main": [
+        [
+          {
+            "node": "pick_select_fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick_results": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Submitted_Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submitted_Form": {
+      "main": [
+        [],
+        [
+          {
+            "node": "pick_group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick_select_fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'Fetch_n_Clean'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pick_group": {
+      "main": [
+        [
+          {
+            "node": "Submitted_Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "81051b43-709e-4130-a862-b11195661a20",
+  "meta": {
+    "instanceId": "28f1c26bfccc0455a2139ee493588e8532ed5ae19eaee62ccf04423f1ce349ae"
+  },
+  "id": "32GZJFcOaMiw6iDx",
+  "tags": []
+}
